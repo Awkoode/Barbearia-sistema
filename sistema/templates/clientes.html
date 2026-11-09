@@ -1,0 +1,31 @@
+{% extends "base.html" %}
+{% block corpo %}
+<h1>Clientes</h1>
+
+<form method="get" action="{{ url_for('clientes') }}" class="busca">
+  <input name="busca" value="{{ busca }}" placeholder="Buscar pelo nome">
+  <button type="submit">Buscar</button>
+  {% if busca %}<a href="{{ url_for('clientes') }}">limpar</a>{% endif %}
+</form>
+
+<table>
+  <thead><tr><th>Nome</th><th>Telefone</th><th>CPF</th></tr></thead>
+  <tbody>
+    {% for c in clientes %}
+      <tr><td>{{ c.nome }}</td><td>{{ c.telefone }}</td><td>{{ c.cpf }}</td></tr>
+    {% else %}
+      <tr><td colspan="3">Nenhum cliente com esse nome. Ou ninguém veio ainda.</td></tr>
+    {% endfor %}
+  </tbody>
+</table>
+
+<section class="cartao">
+  <h2>Novo cliente</h2>
+  <form method="post" action="{{ url_for('clientes') }}">
+    <label>Nome <input name="nome" required></label>
+    <label>Telefone <input name="telefone"></label>
+    <label>CPF (só números) <input name="cpf" inputmode="numeric" maxlength="14" required></label>
+    <button type="submit">Cadastrar</button>
+  </form>
+</section>
+{% endblock %}

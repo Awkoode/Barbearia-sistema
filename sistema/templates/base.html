@@ -1,0 +1,32 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>SAEP Barbearia</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+{% if session.get('usuario_id') %}
+  <header class="topo">
+    <span class="marca">✂ SAEP Barbearia</span>
+    <nav>
+      <a href="{{ url_for('painel') }}">Painel</a>
+      <a href="{{ url_for('clientes') }}">Clientes</a>
+      <a href="{{ url_for('barbeiros') }}">Barbeiros</a>
+      <a href="{{ url_for('servicos') }}">Serviços</a>
+      <a href="{{ url_for('agendamentos') }}">Agendamentos</a>
+    </nav>
+    <span class="usuario">{{ session.get('nome') }} · <a href="{{ url_for('logout') }}">sair</a></span>
+  </header>
+{% endif %}
+<main>
+  {% with msgs = get_flashed_messages(with_categories=true) %}
+    {% for categoria, msg in msgs %}
+      <div class="aviso {{ categoria }}">{{ msg }}</div>
+    {% endfor %}
+  {% endwith %}
+  {% block corpo %}{% endblock %}
+</main>
+</body>
+</html>

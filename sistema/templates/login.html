@@ -1,0 +1,17 @@
+{% extends "base.html" %}
+{% block corpo %}
+<section class="cartao login">
+  <h1>Entrar</h1>
+  <p class="dica">Entra aí. Sem sessão nova, sem tela.</p>
+  <form method="post" action="{{ url_for('login') }}">
+    <label>Usuário
+      <input name="login" required autofocus autocomplete="username">
+    </label>
+    <label>Senha
+      <input name="senha" type="password" required autocomplete="current-password">
+    </label>
+    <button type="submit">Entrar</button>
+  </form>
+  <p class="dica">A sessão cai sozinha depois de 30 minutos parado. Não é bug, é regra.</p>
+</section>
+{% endblock %}

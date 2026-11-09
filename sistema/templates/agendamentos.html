@@ -1,0 +1,48 @@
+{% extends "base.html" %}
+{% block corpo %}
+<h1>Agendamentos</h1>
+
+<table>
+  <thead>
+    <tr><th>Data</th><th>Hora</th><th>Cliente</th><th>Serviço</th><th>Barbeiro</th><th>Valor</th><th>Status</th></tr>
+  </thead>
+  <tbody>
+    {% for a in agendamentos %}
+      <tr>
+        <td>{{ a.data }}</td><td>{{ a.hora }}</td><td>{{ a.cliente }}</td>
+        <td>{{ a.servico }} ({{ a.duracao_min }} min)</td><td>{{ a.barbeiro }}</td>
+        <td>R$ {{ "%.2f"|format(a.preco) }}</td><td>{{ a.status }}</td>
+      </tr>
+    {% else %}
+      <tr><td colspan="7">Agenda vazia. Que dia calmo, ou que dia de descanso.</td></tr>
+    {% endfor %}
+  </tbody>
+</table>
+
+<section class="cartao">
+  <h2>Novo agendamento</h2>
+  <form method="post" action="{{ url_for('agendamentos') }}">
+    <label>Cliente
+      <select name="cliente_id" required>
+        <option value="">— escolhe —</option>
+        {% for c in clientes %}<option value="{{ c.id }}">{{ c.nome }}</option>{% endfor %}
+      </select>
+    </label>
+    <label>Barbeiro responsável
+      <select name="barbeiro_id" required>
+        <option value="">— escolhe —</option>
+        {% for b in barbeiros %}<option value="{{ b.id }}">{{ b.nome }}</option>{% endfor %}
+      </select>
+    </label>
+    <label>Serviço
+      <select name="servico_id" required>
+        <option value="">— escolhe —</option>
+        {% for s in servicos %}<option value="{{ s.id }}">{{ s.nome }}</option>{% endfor %}
+      </select>
+    </label>
+    <label>Data <input type="date" name="data" required></label>
+    <label>Hora <input type="time" name="hora" required></label>
+    <button type="submit">Agendar</button>
+  </form>
+</section>
+{% endblock %}

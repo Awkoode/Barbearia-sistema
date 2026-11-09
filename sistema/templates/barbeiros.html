@@ -1,0 +1,26 @@
+{% extends "base.html" %}
+{% block corpo %}
+<h1>Barbeiros</h1>
+
+<table>
+  <thead><tr><th>Nome</th><th>Telefone</th><th>CPF</th></tr></thead>
+  <tbody>
+    {% for b in barbeiros %}
+      <tr><td>{{ b.nome }}</td><td>{{ b.telefone }}</td><td>{{ b.cpf }}</td></tr>
+    {% else %}
+      <tr><td colspan="3">Nenhum barbeiro cadastrado. A cadeira tá vazia.</td></tr>
+    {% endfor %}
+  </tbody>
+</table>
+
+<section class="cartao">
+  <h2>Novo barbeiro</h2>
+  <form method="post" action="{{ url_for('barbeiros') }}">
+    <label>Nome <input name="nome" required></label>
+    <label>Telefone <input name="telefone"></label>
+    <label>CPF (só números) <input name="cpf" inputmode="numeric" maxlength="14" required></label>
+    <label>Senha (6+ caracteres) <input name="senha" type="password" minlength="6" required></label>
+    <button type="submit">Cadastrar</button>
+  </form>
+</section>
+{% endblock %}

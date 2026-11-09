@@ -1,0 +1,40 @@
+erDiagram
+    USUARIO {
+        int id PK
+        string nome
+        string login UK
+        string senha_hash
+    }
+    BARBEIRO {
+        int id PK
+        string nome
+        string telefone
+        string cpf_criptografado
+        string senha_criptografada
+        int ativo
+    }
+    CLIENTE {
+        int id PK
+        string nome
+        string telefone
+        string email
+        string cpf_criptografado
+    }
+    SERVICO {
+        int id PK
+        string nome
+        real preco
+        int duracao_min
+    }
+    AGENDAMENTO {
+        int id PK
+        int cliente_id FK
+        int barbeiro_id FK
+        int servico_id FK
+        string data
+        string hora
+        string status
+    }
+    CLIENTE ||--o{ AGENDAMENTO : "possui"
+    BARBEIRO ||--o{ AGENDAMENTO : "atende"
+    SERVICO ||--o{ AGENDAMENTO : "é prestado em"

@@ -1,0 +1,11 @@
+{% extends "base.html" %}
+{% block corpo %}
+<h1>Painel</h1>
+<p class="dica">Bem-vindo, {{ session.get('nome') }}. Escolhe o que quer fazer aí em cima.</p>
+<div class="grade">
+  <a class="cartao" href="{{ url_for('clientes') }}"><strong>{{ contagens.clientes }}</strong> clientes</a>
+  <a class="cartao" href="{{ url_for('barbeiros') }}"><strong>{{ contagens.barbeiros }}</strong> barbeiros ativos</a>
+  <a class="cartao" href="{{ url_for('servicos') }}"><strong>{{ contagens.servicos }}</strong> serviços</a>
+  <a class="cartao" href="{{ url_for('agendamentos') }}"><strong>{{ contagens.agendamentos }}</strong> agendamentos</a>
+</div>
+{% endblock %}
