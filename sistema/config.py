@@ -11,7 +11,9 @@ CHAVE_DEMO = "uqto25BdOKQRNS9hSQ4EnN_K3RLYmLGKrtvIoCCbf08="
 class Config:
     SECRET_KEY = os.environ.get("SAEP_SECRET", "troca-isso-depois-por-favor")
     CHAVE_CRIPTO = os.environ.get("SAEP_CHAVE", CHAVE_DEMO)
-    DB_PATH = os.environ.get("SAEP_DB", os.path.join(BASE_DIR, "..", "saep.db"))
+    DATABASE_URL = os.environ.get(
+        "SAEP_DATABASE_URL", "postgresql://postgres:postgres@localhost:5432/saep"
+    )
     # sessão expira em 30 min de inatividade (o gestor pediu, então toma)
     SESSION_MINUTOS = 30
     SESSION_COOKIE_HTTPONLY = True

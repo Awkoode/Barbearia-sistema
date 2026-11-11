@@ -5,9 +5,10 @@ A lógica tá toda aqui, sem framework de frescura além do Flask.
 """
 import functools
 import re
-import sqlite3
 from datetime import timedelta
 
+import psycopg
+from psycopg.rows import dict_row
 from flask import Flask, flash, g, redirect, render_template, request, session, url_for
 from werkzeug.security import check_password_hash
 
@@ -24,9 +25,7 @@ app.permanent_session_lifetime = timedelta(minutes=Config.SESSION_MINUTOS)
 def get_db():
     # uma conexão por requisição. Se abrir duas eu me perco no meio do caminho.
     if "db" not in g:
-        g.db = sqlite3.connect(Config.DB_PATH)
-        g.db.row_factory = sqlite3.Row
-        g.db.execute("PRAGMA foreign_keys = ON")
+        g.db = psycopg.connect(Config.DATABASE_URL, row_factory=dict_row)
     return g.db
 
 
@@ -66,7 +65,7 @@ def login():
         senha = request.form.get("senha", "")
 
         usuario = get_db().execute(
-            "SELECT id, nome, senha_hash FROM usuario WHERE login = ?", (login_digitado,)
+            "SELECT id, nome, senha_hash FROM usuario WHERE login = %s", (login_digitado,)
         ).fetchone()
 
         # mensagem genérica de propósito: não dizer se foi o usuário ou a senha que errou
@@ -97,10 +96,10 @@ def logout():
 def painel():
     db = get_db()
     contagens = {
-        "clientes": db.execute("SELECT COUNT(*) FROM cliente").fetchone()[0],
-        "barbeiros": db.execute("SELECT COUNT(*) FROM barbeiro WHERE ativo = 1").fetchone()[0],
-        "servicos": db.execute("SELECT COUNT(*) FROM servico").fetchone()[0],
-        "agendamentos": db.execute("SELECT COUNT(*) FROM agendamento").fetchone()[0],
+        "clientes": db.execute("SELECT COUNT(*) FROM cliente").fetchone()["count"],
+        "barbeiros": db.execute("SELECT COUNT(*) FROM barbeiro WHERE ativo = 1").fetchone()["count"],
+        "servicos": db.execute("SELECT COUNT(*) FROM servico").fetchone()["count"],
+        "agendamentos": db.execute("SELECT COUNT(*) FROM agendamento").fetchone()["count"],
     }
     return render_template("painel.html", contagens=contagens)
 
@@ -121,7 +120,7 @@ def clientes():
             flash("Nome e CPF com 11 números são obrigatórios. Sem isso eu não cadastro.", "erro")
         else:
             db.execute(
-                "INSERT INTO cliente (nome, telefone, cpf_criptografado) VALUES (?, ?, ?)",
+                "INSERT INTO cliente (nome, telefone, cpf_criptografado) VALUES (%s, %s, %s)",
                 (nome, telefone, cifrar(cpf)),
             )
             db.commit()
@@ -131,7 +130,7 @@ def clientes():
     # busca: só filtra o nome, o CPF tá criptografado e não dá pra fazer LIKE nele
     busca = request.args.get("busca", "").strip()
     linhas = db.execute(
-        "SELECT id, nome, telefone, cpf_criptografado FROM cliente WHERE nome LIKE ? ORDER BY nome",
+        "SELECT id, nome, telefone, cpf_criptografado FROM cliente WHERE nome ILIKE %s ORDER BY nome",
         (f"%{busca}%",),
     ).fetchall()
 
@@ -165,7 +164,7 @@ def barbeiros():
         else:
             db.execute(
                 "INSERT INTO barbeiro (nome, telefone, cpf_criptografado, senha_criptografada) "
-                "VALUES (?, ?, ?, ?)",
+                "VALUES (%s, %s, %s, %s)",
                 (nome, telefone, cifrar(cpf), cifrar(senha)),
             )
             db.commit()
@@ -207,7 +206,7 @@ def servicos():
             flash("Nome obrigatório, preço não negativo e duração maior que zero.", "erro")
         else:
             db.execute(
-                "INSERT INTO servico (nome, preco, duracao_min) VALUES (?, ?, ?)",
+                "INSERT INTO servico (nome, preco, duracao_min) VALUES (%s, %s, %s)",
                 (nome, preco, duracao),
             )
             db.commit()
@@ -243,7 +242,7 @@ def agendamentos():
 
         # choque de horário era o problema principal da barbearia, então isso aqui não pode falhar
         conflito = db.execute(
-            "SELECT 1 FROM agendamento WHERE barbeiro_id = ? AND data = ? AND hora = ?",
+            "SELECT 1 FROM agendamento WHERE barbeiro_id = %s AND data = %s AND hora = %s",
             (barbeiro_id, data, hora),
         ).fetchone()
         if conflito:
@@ -253,12 +252,13 @@ def agendamentos():
         try:
             db.execute(
                 "INSERT INTO agendamento (cliente_id, barbeiro_id, servico_id, data, hora) "
-                "VALUES (?, ?, ?, ?, ?)",
+                "VALUES (%s, %s, %s, %s, %s)",
                 (cliente_id, barbeiro_id, servico_id, data, hora),
             )
             db.commit()
             flash("Agendamento marcado. Agora é torcer pro cliente aparecer.", "ok")
-        except sqlite3.IntegrityError:
+        except psycopg.IntegrityError:
+            db.rollback()  # no Postgres a transação fica abortada depois de erro
             flash("Cliente, barbeiro ou serviço não existe mais. Recarrega a página.", "erro")
         return redirect(url_for("agendamentos"))
 
